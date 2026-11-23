@@ -191,6 +191,18 @@
     <section id="learn" class="panel">
       <h2>Vocabulary List</h2>
       <p class="muted">중국어 단어의 발음을 직접 들어보세요.</p>
+<div style="margin: 20px 0;">
+  <label for="voice-select" style="display:block; margin-bottom:8px; font-weight:600;">
+    중국어 발음 선택
+  </label>
+  <select id="voice-select"
+          style="width:100%;padding:12px;border:1px solid #e2e8f0;border-radius:10px;background:white;">
+    <option value="">중국어 음성을 불러오는 중...</option>
+  </select>
+  <p class="muted" style="font-size:13px;">
+    목소리를 변경한 후 단어의 🔊 버튼을 눌러 비교해 보세요.
+  </p>
+</div>
       <div id="word-list"></div>
       <div class="actions">
         <button onclick="showStep('review')">Start Review →</button>
@@ -277,22 +289,96 @@
       }[char]));
     }
 
-    function speak(text, rate = 1) {
-      if (!("speechSynthesis" in window)) {
-        alert("이 브라우저에서는 음성 재생을 지원하지 않습니다.");
-        return;
-      }
-      speechSynthesis.cancel();
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = "zh-CN";
-      utterance.rate = rate;
-      const voices = speechSynthesis.getVoices();
-      const chineseVoice = voices.find(v =>
-        v.lang.toLowerCase().startsWith("zh-cn")
-      );
-      if (chineseVoice) utterance.voice = chineseVoice;
-      speechSynthesis.speak(utterance);
+    
+let chineseVoices = [];
+
+function loadChineseVoices() {
+  if (!("speechSynthesis" in window)) return;
+
+  const select = document.getElementById("voice-select");
+  const previous = select.value;
+
+  chineseVoices = window.speechSynthesis.getVoices()
+    .filter(voice =>
+      voice.lang.toLowerCase().startsWith("zh")
+    );
+
+  select.replaceChildren();
+
+  if (chineseVoices.length === 0) {
+    const option = new Option("중국어 음성이 없습니다", "");
+    select.add(option);
+    return;
+  }
+
+  chineseVoices.forEach((voice, index) => {
+    const option = new Option(
+      `${voice.name} (${voice.lang})`,
+      String(index)
+    );
+    select.add(option);
+  });
+
+  const saved = localStorage.getItem("minssem-voice");
+  const savedIndex = chineseVoices.findIndex(
+    voice => voice.voiceURI === saved
+  );
+
+  if (savedIndex >= 0) {
+    select.value = String(savedIndex);
+  } else if (previous !== "" &&
+             Number(previous) < chineseVoices.length) {
+    select.value = previous;
+  } else {
+    const preferred = chineseVoices.findIndex(
+      voice => voice.lang.toLowerCase() === "zh-cn"
+    );
+    select.value = String(preferred >= 0 ? preferred : 0);
+  }
+}
+
+function speak(text, rate = 1) {
+  if (!("speechSynthesis" in window)) {
+    alert("이 브라우저는 음성 재생을 지원하지 않습니다.");
+    return;
+  }
+
+  const synth = window.speechSynthesis;
+  synth.cancel();
+
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.lang = "zh-CN";
+  utterance.rate = rate;
+  utterance.pitch = 1;
+
+  const selected = document.getElementById("voice-select").value;
+  const voice = chineseVoices[Number(selected)];
+
+  if (voice) {
+    utterance.voice = voice;
+    utterance.lang = voice.lang;
+  }
+
+  synth.speak(utterance);
+}
+
+document.getElementById("voice-select")
+  .addEventListener("change", function () {
+    const voice = chineseVoices[Number(this.value)];
+    if (voice) {
+      localStorage.setItem("minssem-voice", voice.voiceURI);
+      speak("你好");
     }
+  });
+
+if ("speechSynthesis" in window) {
+  loadChineseVoices();
+  window.speechSynthesis.addEventListener(
+    "voiceschanged",
+    loadChineseVoices
+  );
+}
+
 
     function renderList() {
       document.getElementById("word-list").innerHTML =

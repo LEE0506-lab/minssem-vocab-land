@@ -329,13 +329,22 @@ function loadChineseVoices() {
   } else if (previous !== "" &&
              Number(previous) < chineseVoices.length) {
     select.value = previous;
-  } else {
-    const preferred = chineseVoices.findIndex(
-      voice => voice.lang.toLowerCase() === "zh-cn"
-    );
-    select.value = String(preferred >= 0 ? preferred : 0);
-  }
+  
+} else {
+  const preferred = chineseVoices.findIndex(voice =>
+    voice.lang.toLowerCase() === "zh-cn" &&
+    voice.name.toLowerCase().includes("google")
+  );
+
+  const fallback = chineseVoices.findIndex(voice =>
+    voice.lang.toLowerCase() === "zh-cn"
+  );
+
+  select.value = String(
+    preferred >= 0 ? preferred : fallback >= 0 ? fallback : 0
+  );
 }
+
 
 function speak(text, rate = 1) {
   if (!("speechSynthesis" in window)) {

@@ -1,0 +1,473 @@
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>민쌤중국어 어휘랜드 2.0</title>
+  <style>
+    :root {
+      --primary: #0f766e;
+      --light: #f0fdfa;
+      --bg: #f8fafc;
+      --text: #1e293b;
+      --muted: #64748b;
+      --border: #e2e8f0;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont,
+        "Apple SD Gothic Neo", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+    header {
+      background: white;
+      border-bottom: 1px solid var(--border);
+      padding: 20px;
+    }
+    .header-inner {
+      max-width: 1000px;
+      margin: auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .brand { font-size: 20px; font-weight: 800; }
+    .sub { color: var(--muted); font-size: 13px; }
+    main {
+      max-width: 900px;
+      margin: 32px auto;
+      padding: 0 16px;
+    }
+    .panel {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 18px;
+    }
+    h1 { font-size: 26px; margin: 8px 0; }
+    h2 { font-size: 20px; }
+    p { line-height: 1.6; }
+    .muted { color: var(--muted); }
+    .steps {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 18px;
+      flex-wrap: wrap;
+    }
+    button {
+      cursor: pointer;
+      border: 0;
+      border-radius: 10px;
+      padding: 12px 18px;
+      font-size: 14px;
+      font-weight: 600;
+      background: var(--primary);
+      color: white;
+    }
+    button.secondary {
+      background: white;
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    button:disabled { opacity: .45; cursor: default; }
+    .steps button.active { background: var(--primary); color: white; }
+    .steps button:not(.active) {
+      background: white;
+      color: var(--muted);
+      border: 1px solid var(--border);
+    }
+    .hidden { display: none !important; }
+    .word-row {
+      display: grid;
+      grid-template-columns: 1fr 1.3fr 1.4fr auto;
+      align-items: center;
+      gap: 12px;
+      border-bottom: 1px solid var(--border);
+      padding: 14px 0;
+    }
+    .hanzi {
+      font-family: "PingFang SC", "Noto Sans SC", sans-serif;
+      font-size: 23px;
+      font-weight: 600;
+    }
+    .audio {
+      background: var(--light);
+      color: var(--primary);
+      padding: 10px 13px;
+    }
+    .card {
+      min-height: 240px;
+      background: var(--light);
+      border-radius: 16px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 14px;
+      cursor: pointer;
+      text-align: center;
+      margin: 18px 0;
+      padding: 20px;
+    }
+    .card .big { font-size: 46px; font-weight: 700; }
+    .actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 20px;
+    }
+    .option {
+      width: 100%;
+      display: block;
+      text-align: left;
+      background: white;
+      color: var(--text);
+      border: 1px solid var(--border);
+      margin: 10px 0;
+      padding: 17px;
+    }
+    .option.selected {
+      background: var(--light);
+      border-color: var(--primary);
+    }
+    .progress {
+      height: 8px;
+      background: var(--border);
+      border-radius: 20px;
+      overflow: hidden;
+    }
+    .progress div {
+      height: 100%;
+      background: var(--primary);
+      transition: width .2s;
+    }
+    .result-item {
+      padding: 14px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .correct { color: #15803d; }
+    .wrong { color: #dc2626; }
+    @media(max-width:600px) {
+      .panel { padding: 18px; }
+      .word-row { grid-template-columns: 1fr 1fr auto; }
+      .word-row .meaning { grid-column: 1 / 3; }
+      h1 { font-size: 22px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-inner">
+      <div>
+        <div class="brand">민쌤중국어 어휘랜드 2.0</div>
+        <div class="sub">MINSSEM CHINESE · Vocabulary Learning</div>
+      </div>
+      <span class="sub">HSK 3.0</span>
+    </div>
+  </header>
+
+  <main>
+    <section class="panel">
+      <div class="sub">HSK 3.0 · LEVEL 1 · LESSON 01</div>
+      <h1>AI小语，你好！</h1>
+      <p class="muted">
+        단어를 배우고, 발음을 듣고, 복습한 다음
+        영어 뜻 테스트에 도전해 보세요.
+      </p>
+    </section>
+
+    <nav class="steps" aria-label="학습 단계">
+      <button id="tab-learn" onclick="showStep('learn')">1. Learn</button>
+      <button id="tab-review" onclick="showStep('review')">2. Review</button>
+      <button id="tab-test" onclick="showStep('test')">3. Test</button>
+      <button id="tab-result" onclick="showStep('result')">4. Results</button>
+    </nav>
+
+    <section id="learn" class="panel">
+      <h2>Vocabulary List</h2>
+      <p class="muted">중국어 단어의 발음을 직접 들어보세요.</p>
+      <div id="word-list"></div>
+      <div class="actions">
+        <button onclick="showStep('review')">Start Review →</button>
+      </div>
+    </section>
+
+    <section id="review" class="panel hidden">
+      <h2>Flashcard Review</h2>
+      <p id="card-count" class="muted"></p>
+      <div id="flashcard" class="card"
+           role="button" tabindex="0"
+           onclick="flipCard()"
+           onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();flipCard()}">
+      </div>
+      <div class="actions">
+        <button class="secondary" onclick="speakCurrent(1)">🔊 Listen</button>
+        <button class="secondary" onclick="speakCurrent(0.7)">Slow</button>
+      </div>
+      <div class="actions">
+        <button class="secondary" onclick="markCard(false)">Study Again</button>
+        <button onclick="markCard(true)">I Know This ✓</button>
+      </div>
+      <p id="known-count" class="muted"></p>
+      <div class="actions">
+        <button class="secondary" onclick="previousCard()">← Previous</button>
+        <button onclick="showStep('test')">Start Test →</button>
+      </div>
+    </section>
+
+    <section id="test" class="panel hidden">
+      <h2>Vocabulary Test</h2>
+      <p id="question-count" class="muted"></p>
+      <div class="progress"><div id="test-progress"></div></div>
+      <div class="card">
+        <div class="muted">Choose the correct English meaning.</div>
+        <div id="question-word" class="big"></div>
+      </div>
+      <div id="options"></div>
+      <div class="actions">
+        <button class="secondary" onclick="previousQuestion()">← Previous</button>
+        <button id="next-button" onclick="nextQuestion()">Next →</button>
+      </div>
+    </section>
+
+    <section id="result" class="panel hidden">
+      <h2>Test Results</h2>
+      <h1 id="score"></h1>
+      <p id="score-detail" class="muted"></p>
+      <h2>Answer Review</h2>
+      <div id="answer-review"></div>
+      <div class="actions">
+        <button onclick="startTest()">Retry Test</button>
+        <button class="secondary" onclick="showStep('review')">
+          Review Again
+        </button>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    // 첫 버전의 예시 단어입니다.
+    // 교재의 전체 어휘는 검수 후 별도로 추가합니다.
+    const words = [
+      {hanzi:"你好", pinyin:"nǐ hǎo", english:"hello"},
+      {hanzi:"老师", pinyin:"lǎoshī", english:"teacher"},
+      {hanzi:"谢谢", pinyin:"xièxie", english:"thank you"},
+      {hanzi:"学生", pinyin:"xuésheng", english:"student"},
+      {hanzi:"再见", pinyin:"zàijiàn", english:"goodbye"},
+      {hanzi:"大家", pinyin:"dàjiā", english:"everybody"}
+    ];
+
+    let cardIndex = 0;
+    let flipped = false;
+    let knownWords = new Set();
+    let questionIndex = 0;
+    let answers = {};
+    let testFinished = false;
+    let questions = [];
+
+    function escapeHtml(text) {
+      return String(text).replace(/[&<>"']/g, char => ({
+        "&":"&amp;", "<":"&lt;", ">":"&gt;",
+        '"':"&quot;", "'":"&#39;"
+      }[char]));
+    }
+
+    function speak(text, rate = 1) {
+      if (!("speechSynthesis" in window)) {
+        alert("이 브라우저에서는 음성 재생을 지원하지 않습니다.");
+        return;
+      }
+      speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = "zh-CN";
+      utterance.rate = rate;
+      const voices = speechSynthesis.getVoices();
+      const chineseVoice = voices.find(v =>
+        v.lang.toLowerCase().startsWith("zh-cn")
+      );
+      if (chineseVoice) utterance.voice = chineseVoice;
+      speechSynthesis.speak(utterance);
+    }
+
+    function renderList() {
+      document.getElementById("word-list").innerHTML =
+        words.map((w, i) => `
+          <div class="word-row">
+            <div class="hanzi">${escapeHtml(w.hanzi)}</div>
+            <div>${escapeHtml(w.pinyin)}</div>
+            <div class="meaning">${escapeHtml(w.english)}</div>
+            <button class="audio" onclick="speak(words[${i}].hanzi)"
+                    aria-label="발음 듣기">🔊</button>
+          </div>
+        `).join("");
+    }
+
+function showStep(step) {
+  if (step === "result" && !testFinished) return;
+
+  if ("speechSynthesis" in window) {
+    window.speechSynthesis.cancel();
+  }
+
+  ["learn","review","test","result"].forEach(name => {
+        document.getElementById(name).classList.toggle(
+          "hidden", name !== step
+        );
+        document.getElementById("tab-" + name).classList.toggle(
+          "active", name === step
+        );
+      });
+      if (step === "review") renderCard();
+      if (step === "test") {
+        if (!questions.length) startTest();
+        else renderQuestion();
+      }
+      window.scrollTo({top:0, behavior:"smooth"});
+    }
+
+    function renderCard() {
+      const w = words[cardIndex];
+      document.getElementById("card-count").textContent =
+        `Card ${cardIndex + 1} / ${words.length}`;
+      document.getElementById("flashcard").innerHTML = flipped
+        ? `<div class="muted">ENGLISH</div>
+           <div class="big">${escapeHtml(w.english)}</div>
+           <div>${escapeHtml(w.hanzi)} · ${escapeHtml(w.pinyin)}</div>
+           <div class="sub">Tap to flip back</div>`
+        : `<div class="muted">CHINESE</div>
+           <div class="big">${escapeHtml(w.hanzi)}</div>
+           <div>${escapeHtml(w.pinyin)}</div>
+           <div class="sub">Tap to reveal meaning</div>`;
+      document.getElementById("known-count").textContent =
+        `Known words: ${knownWords.size} / ${words.length}`;
+    }
+
+    function flipCard() {
+      flipped = !flipped;
+      renderCard();
+    }
+
+    function speakCurrent(rate) {
+      speak(words[cardIndex].hanzi, rate);
+    }
+
+    function markCard(known) {
+      if (known) knownWords.add(cardIndex);
+      else knownWords.delete(cardIndex);
+      cardIndex = (cardIndex + 1) % words.length;
+      flipped = false;
+      renderCard();
+    }
+
+    function previousCard() {
+      cardIndex = (cardIndex - 1 + words.length) % words.length;
+      flipped = false;
+      renderCard();
+    }
+
+    function shuffle(array) {
+      const copy = [...array];
+      for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    }
+
+    function startTest() {
+      questions = shuffle(words).map(word => {
+        const distractors = shuffle(
+          [...new Set(words
+            .filter(w => w.english !== word.english)
+            .map(w => w.english))]
+        ).slice(0, 3);
+        return {
+          ...word,
+          choices: shuffle([word.english, ...distractors])
+        };
+      });
+      answers = {};
+      questionIndex = 0;
+      testFinished = false;
+      showStep("test");
+    }
+
+    function renderQuestion() {
+      const q = questions[questionIndex];
+      document.getElementById("question-count").textContent =
+        `Question ${questionIndex + 1} / ${questions.length}`;
+      document.getElementById("test-progress").style.width =
+        `${(questionIndex + 1) / questions.length * 100}%`;
+      document.getElementById("question-word").textContent = q.hanzi;
+      document.getElementById("options").innerHTML =
+        q.choices.map((choice, i) => `
+          <button class="option ${answers[questionIndex] === i ? "selected" : ""}"
+                  onclick="selectAnswer(${i})">
+            ${String.fromCharCode(65 + i)}. ${escapeHtml(choice)}
+          </button>
+        `).join("");
+      document.getElementById("next-button").textContent =
+        questionIndex === questions.length - 1
+          ? "Submit Test" : "Next →";
+      document.getElementById("next-button").disabled =
+        answers[questionIndex] === undefined;
+    }
+
+    function selectAnswer(i) {
+      answers[questionIndex] = i;
+      renderQuestion();
+    }
+
+    function previousQuestion() {
+      if (questionIndex > 0) {
+        questionIndex--;
+        renderQuestion();
+      }
+    }
+
+    function nextQuestion() {
+      if (answers[questionIndex] === undefined) return;
+      if (questionIndex < questions.length - 1) {
+        questionIndex++;
+        renderQuestion();
+      } else {
+        finishTest();
+      }
+    }
+
+    function finishTest() {
+      testFinished = true;
+      const correct = questions.filter(
+        (q, i) => q.choices[answers[i]] === q.english
+      ).length;
+      document.getElementById("score").textContent =
+        `${Math.round(correct / questions.length * 100)}%`;
+      document.getElementById("score-detail").textContent =
+        `${correct} / ${questions.length} correct answers`;
+      document.getElementById("answer-review").innerHTML =
+        questions.map((q, i) => {
+          const chosen = q.choices[answers[i]];
+          const right = chosen === q.english;
+          return `<div class="result-item">
+            <strong>${escapeHtml(q.hanzi)}</strong>
+            · ${escapeHtml(q.pinyin)}
+            <div class="${right ? "correct" : "wrong"}">
+              ${right ? "✓ Correct" : "✗ Incorrect"}
+            </div>
+            <div>Correct answer: ${escapeHtml(q.english)}</div>
+            <div class="muted">Your answer: ${escapeHtml(chosen)}</div>
+          </div>`;
+        }).join("");
+      showStep("result");
+    }
+
+    renderList();
+    showStep("learn");
+  </script>
+</body>
+</html>
